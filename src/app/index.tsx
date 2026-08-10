@@ -1,98 +1,108 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useRef, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+import { useAppExpiry } from "@/hooks/useAppExpiry";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { ErrorScreen } from "@/components/ErrorScreen";
+import { OfflineScreen } from "@/components/OfflineScreen";
+import { ExpiredModal } from "@/components/ExpiredModal";
+import { ExpiredScreen } from "@/screens/ExpiredScreen";
+import { WebViewScreen } from "@/screens/WebViewScreen";
+import { DEFAULT_CONTACT_NUMBER } from "@/constants/config";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function App() {
+  const {
+    flowState,
+    cachedAccess,
+    errorMessage,
+    isInitialLoad,
+    isOffline,
+    refreshStatus,
+    markExpired,
+  } = useAppExpiry();
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const hasShownExpiredModal = useRef(false);
+
+  useEffect(() => {
+    if (flowState === "expired" && !hasShownExpiredModal.current) {
+      hasShownExpiredModal.current = true;
+      setShowExpiredModal(true);
+    }
+  }, [flowState]);
+
+  const expiryTime = cachedAccess?.status.expiryTime ?? new Date().toISOString();
+  const contactNumber =
+    cachedAccess?.status.contactNumber ?? DEFAULT_CONTACT_NUMBER;
+  const serverTimeOffset = cachedAccess?.serverTimeOffset ?? 0;
+
+  if (isInitialLoad || flowState === "loading") {
     return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="light" />
+        <LoadingScreen message="Verifying application access..." />
+      </SafeAreaView>
     );
   }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
+  if (flowState === "offline") {
+    return (
       <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
+        <StatusBar style="light" />
+        <OfflineScreen onRetry={refreshStatus} />
       </SafeAreaView>
-    </ThemedView>
+    );
+  }
+
+  if (flowState === "error") {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="light" />
+        <ErrorScreen
+          title="Unable to verify application"
+          message={
+            errorMessage ??
+            "Please check your internet connection and try again."
+          }
+          onRetry={refreshStatus}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (flowState === "expired") {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="light" />
+        <ExpiredScreen expiryTime={expiryTime} contactNumber={contactNumber} />
+        <ExpiredModal
+          visible={showExpiredModal}
+          expiryTime={expiryTime}
+          contactNumber={contactNumber}
+          onClose={() => setShowExpiredModal(false)}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <StatusBar style="dark" />
+      <WebViewScreen
+        expiryTime={expiryTime}
+        serverTimeOffset={serverTimeOffset}
+        onExpire={markExpired}
+        onFocus={refreshStatus}
+        isOffline={isOffline}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+    backgroundColor: "#0F172A",
   },
 });
