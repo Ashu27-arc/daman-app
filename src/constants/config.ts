@@ -2,7 +2,7 @@ export const WEBSITE_URL =
   "https://damanvipgames.com/#/register?invitationCode=546523888661";
 
 export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? "http://10.0.2.2:3000";
+  process.env.EXPO_PUBLIC_API_URL ?? "https://daman-backend.onrender.com";
 
 export const DEFAULT_CONTACT_NUMBER = "+919999999999";
 
