@@ -1,9 +1,9 @@
-import { ExpoConfig, ConfigContext } from "expo/config";
-
-export default ({ config }: ConfigContext): ExpoConfig => ({
+/** @type {import('expo/config').ExpoConfig} */
+module.exports = ({ config }) => ({
   ...config,
   name: "Daman VIP Games",
   slug: "daman-vip-games",
+  owner: "aarush028",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
@@ -54,6 +54,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         android: {
           usesCleartextTraffic: true,
+          buildArchs: ["arm64-v8a"],
         },
       },
     ],
@@ -73,7 +74,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     eas: {
-      projectId: "c872ae0a-e98e-4e76-8da9-b931d82fb20e",
+      projectId: "beae9170-70ca-4781-9169-4dc033f02b2d",
     },
   },
 });
