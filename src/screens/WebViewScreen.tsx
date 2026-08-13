@@ -1,25 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   BackHandler,
   Platform,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import { WebView, type WebViewNavigation } from "react-native-webview";
 import * as Linking from "expo-linking";
-import { StatusHeader } from "@/components/StatusHeader";
-import { LoadingScreen } from "@/components/LoadingScreen";
+
 import { ErrorScreen } from "@/components/ErrorScreen";
 import { WEBSITE_URL } from "@/constants/config";
-
-interface WebViewScreenProps {
-  expiryTime: string;
-  serverTimeOffset: number;
-  onExpire: () => void;
-  onFocus?: () => void;
-  isOffline?: boolean;
-}
 
 const EXTERNAL_SCHEMES = ["tel:", "mailto:", "sms:", "whatsapp:", "upi:"];
 
@@ -38,13 +29,7 @@ function isExternalUrl(url: string): boolean {
   }
 }
 
-export function WebViewScreen({
-  expiryTime,
-  serverTimeOffset,
-  onExpire,
-  onFocus,
-  isOffline = false,
-}: WebViewScreenProps) {
+export function WebViewScreen() {
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [isWebLoading, setIsWebLoading] = useState(true);
@@ -93,10 +78,6 @@ export function WebViewScreen({
     return () => subscription.remove();
   }, [canGoBack]);
 
-  useEffect(() => {
-    onFocus?.();
-  }, [onFocus]);
-
   if (webError) {
     return (
       <ErrorScreen
@@ -109,22 +90,10 @@ export function WebViewScreen({
 
   return (
     <View style={styles.container}>
-      {isOffline ? (
-        <View style={styles.offlineBanner}>
-          <Text style={styles.offlineText}>
-            Offline — using last verified access
-          </Text>
-        </View>
-      ) : null}
-      <StatusHeader
-        expiryTime={expiryTime}
-        serverTimeOffset={serverTimeOffset}
-        onExpire={onExpire}
-      />
       <View style={styles.webViewContainer}>
         {isWebLoading ? (
           <View style={styles.loadingOverlay}>
-            <LoadingScreen message="Loading website..." />
+            <ActivityIndicator size="large" color="#208AEF" />
           </View>
         ) : null}
         <WebView
@@ -172,16 +141,7 @@ const styles = StyleSheet.create({
   loadingOverlay: {
     ...StyleSheet.absoluteFill,
     zIndex: 10,
-  },
-  offlineBanner: {
-    backgroundColor: "#FBBF24",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  offlineText: {
-    color: "#78350F",
-    fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -6,7 +6,7 @@ module.exports = ({ config }) => ({
   owner: "aarush028",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/app-icon.jpg",
   scheme: "damanvipgames",
   userInterfaceStyle: "automatic",
   ios: {
@@ -22,10 +22,8 @@ module.exports = ({ config }) => ({
   android: {
     package: "com.damanvipgames.app",
     adaptiveIcon: {
-      backgroundColor: "#0F172A",
-      foregroundImage: "./assets/images/android-icon-foreground.png",
-      backgroundImage: "./assets/images/android-icon-background.png",
-      monochromeImage: "./assets/images/android-icon-monochrome.png",
+      backgroundColor: "#D32F2F",
+      foregroundImage: "./assets/app-icon.jpg",
     },
     permissions: [
       "INTERNET",
