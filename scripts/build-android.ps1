@@ -28,11 +28,11 @@ if (-not $env:JAVA_HOME) {
 
 Push-Location "$PSScriptRoot\..\android"
 try {
-  .\gradlew assembleRelease --no-daemon
-  $apk = Get-ChildItem -Recurse -Filter "app-release.apk" "app\build\outputs\apk\release" |
+  .\gradlew bundleRelease --no-daemon
+  $aab = Get-ChildItem -Recurse -Filter "app-release.aab" "app\build\outputs\bundle\release" |
     Select-Object -First 1
-  if ($apk) {
-    Write-Host "`nAPK built successfully:`n$($apk.FullName)"
+  if ($aab) {
+    Write-Host "`nAAB built successfully:`n$($aab.FullName)"
   }
 } finally {
   Pop-Location
